@@ -362,6 +362,83 @@ class SolarValidateTests(unittest.TestCase):
             )
             findings = validate_structure(repo, mode="complete")
             self.assertTrue(any(f.code == "COLORTEX_RANGE" for f in findings))
+    def test_foundation_evidence_documentation_contract(self):
+        repo = self._repo()
+        solar = repo / "Solar-Shader"
+        readme = (solar / "README.md").read_text(encoding="utf-8")
+        changelog = (solar / "CHANGELOG.md").read_text(encoding="utf-8")
+        roadmap = (solar / "ROADMAP.md").read_text(encoding="utf-8")
+        runtime = (solar / "benchmarks" / "foundation-runtime-template.md").read_text(encoding="utf-8")
+
+        self.assertIn(
+            "docs/superpowers/specs/2026-09-29-solar-foundation-design.md",
+            readme,
+        )
+        self.assertIn(
+            "docs/superpowers/plans/2026-09-29-solar-foundation.md",
+            readme,
+        )
+        self.assertIn("S0/S1", readme)
+        self.assertIn("do not prove Iris runtime", readme)
+
+        self.assertIn("Shader Foundation v0", changelog)
+        self.assertIn("S0", changelog)
+        self.assertIn("S1", changelog)
+        self.assertNotIn(
+            "complete on `feat/solar-workspace`; pending integration into `main`",
+            roadmap,
+        )
+        self.assertIn("integrated into `main`", roadmap)
+        self.assertIn("S0/S1", roadmap)
+        self.assertIn("I0/I1", roadmap)
+
+        required_fields = (
+            "Date",
+            "Commit SHA",
+            "Evidence level (I0 or I1)",
+            "Shaderpack discovered by Iris",
+            "Shaderpack enable result",
+            "Solar/Iris compile error result",
+            "Compile/debug log reference",
+            "Minecraft version",
+            "Fabric Loader version",
+            "Iris version",
+            "Sodium version",
+            "GPU",
+            "GPU driver",
+            "CPU",
+            "RAM",
+            "OS",
+            "Resolution",
+            "Render distance",
+            "FPS cap",
+            "VSync",
+            "Monitor refresh where known",
+            "Solar TARGET_FPS",
+            "Solar DEBUG_VIEW",
+            "Scene / seed / coordinates / camera description",
+            "Shader reload result",
+            "Overworld result",
+            "Nether result",
+            "End result",
+            "Terrain result",
+            "Entity result",
+            "Block-entity result",
+            "Sky result",
+            "Hand result",
+            "Water/translucency result",
+            "Weather result",
+            "Dimension-switching result",
+            "Average FPS (I1 only)",
+            "1% low FPS (I1 only)",
+            "GPU frame time where measurable",
+            "CPU frame time where measurable",
+            "Notes / screenshots / logs",
+        )
+        for field in required_fields:
+            self.assertIn(f"- {field}:", runtime)
+        self.assertIn("Blank fields are intentional", runtime)
+        self.assertNotRegex(runtime, r"- Average FPS \(I1 only\):\s+\d")
 
 
 if __name__ == "__main__":
