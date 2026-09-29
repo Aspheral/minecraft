@@ -240,6 +240,20 @@ class SolarValidateTests(unittest.TestCase):
         self.assertIn("solarToDisplayApprox", final)
         for forbidden in ("ACES", "Reinhard", "filmic", "bloom", "exposure", "color grading"):
             self.assertNotIn(forbidden, final.lower() if forbidden.islower() else final)
+
+        composite_source = (
+            shaders / "lib" / "programs" / "composite_fragment.glsl"
+        ).read_text(encoding="utf-8")
+        debug_zero = composite_source.index("#if DEBUG_VIEW == 0")
+        debug_zero_end = composite_source.index("#endif", debug_zero)
+        debug_one = composite_source.index("#if DEBUG_VIEW == 1")
+        debug_two = composite_source.index("#if DEBUG_VIEW == 2")
+        first_surface_sample = composite_source.index("texture(colortex1")
+        first_depth_sample = composite_source.index("texture(depthtex1")
+        self.assertGreater(first_surface_sample, debug_zero_end)
+        self.assertGreater(first_surface_sample, debug_one)
+        self.assertGreater(first_depth_sample, debug_zero_end)
+        self.assertGreater(first_depth_sample, debug_two)
     def test_color_only_and_translucency_contract(self):
         repo = self._repo()
         shaders = repo / "Solar-Shader" / "shaders"
