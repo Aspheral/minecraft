@@ -5,12 +5,7 @@
 #include "/lib/core/color.glsl"
 #include "/lib/surface/surface_encode.glsl"
 
-#if defined(SOLAR_PROGRAM_TEXTURED_LIT) || \
-    defined(SOLAR_PROGRAM_TERRAIN) || \
-    defined(SOLAR_PROGRAM_TERRAIN_SOLID) || \
-    defined(SOLAR_PROGRAM_TERRAIN_CUTOUT) || \
-    defined(SOLAR_PROGRAM_ENTITIES) || \
-    defined(SOLAR_PROGRAM_BLOCK)
+#if defined(SOLAR_PROGRAM_TEXTURED_LIT) || defined(SOLAR_PROGRAM_TERRAIN) || defined(SOLAR_PROGRAM_TERRAIN_SOLID) || defined(SOLAR_PROGRAM_TERRAIN_CUTOUT) || defined(SOLAR_PROGRAM_ENTITIES) || defined(SOLAR_PROGRAM_BLOCK)
 #define SOLAR_ROLE_METADATA
 #endif
 
@@ -18,14 +13,7 @@
 #define SOLAR_ROLE_UNTEXTURED
 #endif
 
-#if defined(SOLAR_PROGRAM_PARTICLES) || \
-    defined(SOLAR_PROGRAM_SKY_TEXTURED) || \
-    defined(SOLAR_PROGRAM_HAND_WATER) || \
-    defined(SOLAR_PROGRAM_WATER) || \
-    defined(SOLAR_PROGRAM_WEATHER) || \
-    defined(SOLAR_PROGRAM_ENTITIES_TRANSLUCENT) || \
-    defined(SOLAR_PROGRAM_BLOCK_TRANSLUCENT) || \
-    defined(SOLAR_PROGRAM_LIGHTNING)
+#if defined(SOLAR_PROGRAM_PARTICLES) || defined(SOLAR_PROGRAM_SKY_TEXTURED) || defined(SOLAR_PROGRAM_HAND_WATER) || defined(SOLAR_PROGRAM_WATER) || defined(SOLAR_PROGRAM_WEATHER) || defined(SOLAR_PROGRAM_ENTITIES_TRANSLUCENT) || defined(SOLAR_PROGRAM_BLOCK_TRANSLUCENT) || defined(SOLAR_PROGRAM_LIGHTNING)
 #define SOLAR_ROLE_PRESERVE_ALPHA
 #endif
 
