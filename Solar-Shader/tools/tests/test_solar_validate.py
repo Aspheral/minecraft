@@ -130,6 +130,42 @@ class SolarValidateTests(unittest.TestCase):
         ):
             self.assertIn(f"float {field};", quality)
         self.assertIn("SolarQuality solarGetQuality()", quality)
+    def test_surface_shader_contract(self):
+        repo = self._repo()
+        shaders = repo / "Solar-Shader" / "shaders"
+        surface = (shaders / "lib" / "surface" / "surface_data.glsl").read_text(encoding="utf-8")
+        encode = (shaders / "lib" / "surface" / "surface_encode.glsl").read_text(encoding="utf-8")
+        decode = (shaders / "lib" / "surface" / "surface_decode.glsl").read_text(encoding="utf-8")
+        space = (shaders / "lib" / "core" / "space.glsl").read_text(encoding="utf-8")
+
+        for declaration in (
+            "vec3 normal;",
+            "float skyLight;",
+            "float blockLight;",
+            "int surfaceClass;",
+        ):
+            self.assertIn(declaration, surface)
+
+        self.assertIn("30.0 / 32.0", space)
+        self.assertIn("1.0 / 32.0", space)
+        self.assertIn("solarEncodeSurface", encode)
+        self.assertIn("solarDecodeSurface", decode)
+
+        all_shader_text = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in shaders.rglob("*")
+            if path.is_file() and path.suffix in {".glsl", ".vsh", ".fsh"}
+        )
+        self.assertNotIn("inverse(", all_shader_text)
+        self.assertNotRegex(all_shader_text, r"\bcolortex(?:[2-9]|[12][0-9]|3[01])\b")
+
+        for path in shaders.rglob("*"):
+            if not path.is_file() or path.suffix not in {".glsl", ".vsh", ".fsh"}:
+                continue
+            if path.name in {"surface_encode.glsl", "surface_decode.glsl"}:
+                continue
+            text = path.read_text(encoding="utf-8")
+            self.assertNotRegex(text, r"colortex1\s*\.[rgba]")
 
 
 if __name__ == "__main__":
