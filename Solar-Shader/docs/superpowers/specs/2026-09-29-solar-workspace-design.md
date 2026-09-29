@@ -5,7 +5,7 @@
 **Project root:** `Solar-Shader/`  
 **Branch:** `feat/solar-workspace`  
 **Status:** Written specification awaiting user review  
-**Revision:** 2 — incorporates the approved cinematic-performance and AutoTune design
+**Revision:** 3 — adds refresh/frame-cap-aware AutoTune budgeting
 
 ## 1. Purpose
 
@@ -132,9 +132,11 @@ The primary real-time target is:
 
 **At least 120 FPS during normal gameplay on a contemporary mainstream gaming-PC class at 1080p under the project's defined benchmark conditions.**
 
-The corresponding nominal frame budget is:
+At 120 FPS, the corresponding nominal total frame budget is:
 
 **8.33 ms per frame.**
+
+120 FPS is the primary Solar design baseline, not a mandatory target for every user. In `AUTO`, Solar should respect a lower intentional gameplay cap where it can be determined. A player targeting 60 FPS has a nominal 16.67 ms total frame budget and should receive materially higher visual quality than the same machine targeting 120 FPS, provided the additional work remains stable.
 
 The project must not claim universal 120 FPS on every machine, resolution, render distance, modpack, scene, driver, or Minecraft version. Benchmark claims must always include the test conditions.
 
@@ -237,6 +239,9 @@ Its intended responsibilities are:
 - identify relevant hardware capabilities where supported,
 - account for the actual display resolution,
 - account for Minecraft/render-distance configuration,
+- determine the user's configured frame-rate limit where supported,
+- account for VSync and monitor refresh behavior where supported,
+- distinguish an intentional frame cap from genuine rendering overload,
 - optionally provide richer performance telemetry,
 - choose sensible initial Solar settings,
 - avoid forcing a high-end system to begin at a mainstream quality level.
@@ -293,19 +298,67 @@ If the machine cannot sustain the configured target FPS without violating the pr
 
 The project must not silently degrade into a radically different visual product simply to display "120 FPS."
 
-## 10. Frame-Time Controller Requirements
+## 10. Target FPS and Frame-Time Controller Requirements
 
-For a 120 FPS target:
+Solar must separate **hardware capability** from **the user's intended frame-rate target**.
 
-- nominal budget: 8.33 ms,
-- the controller should maintain a lower comfort region to preserve headroom,
-- quality reductions should occur only after sustained evidence that the budget is being exceeded,
-- quality increases should require stronger sustained evidence of available headroom,
-- transitions should be rate-limited or otherwise smoothed.
+The nominal total frame budget is:
 
-Exact thresholds, time windows, and control equations belong to the dedicated adaptive-performance specification and must be tested rather than guessed.
+```text
+budget_ms = 1000 / target_fps
+```
 
-The controller should eventually support user-selectable target frame rates where practical, while preserving 120 FPS as the primary Solar design target.
+Reference values:
+
+| Target FPS | Nominal total frame budget |
+| ---: | ---: |
+| 30 | 33.33 ms |
+| 60 | 16.67 ms |
+| 75 | 13.33 ms |
+| 90 | 11.11 ms |
+| 120 | 8.33 ms |
+| 144 | 6.94 ms |
+| 165 | 6.06 ms |
+| 240 | 4.17 ms |
+
+These are total-frame budgets, not permission for Solar to consume the entire interval. Minecraft, CPU work, other mods, driver overhead, and frame-pacing reserve still require headroom.
+
+### 10.1 AUTO target selection
+
+The recommended default policy is:
+
+1. If a lower intentional game cap can be determined reliably, use that cap as the AutoTune performance target.
+2. If the game is uncapped or capped above 120 FPS, use **120 FPS** as Solar's default cinematic-performance target unless the user explicitly selects a higher target.
+3. If VSync effectively limits presentation below 120 FPS and that limit can be determined reliably, AutoTune may use the effective presentation target.
+4. Never lower the target merely because a demanding scene temporarily performs poorly. Performance shortfalls should cause quality adaptation, not silently redefine the user's desired frame rate.
+5. Never infer the configured cap from `frameTime` alone.
+
+That last rule is critical. A game intentionally capped at 60 FPS naturally presents about 16.67 ms frame cadence even when substantial GPU headroom remains. Treating that cadence as proof of overload would cause Solar to reduce quality precisely when it should be spending the user's extra budget.
+
+### 10.2 Standalone shader behavior
+
+Current Iris documentation exposes `frameTime`, but the documentation query performed for this revision did not surface a shader-visible uniform for the user's configured maximum frame rate, VSync state, or monitor refresh rate.
+
+Therefore the standalone shader must not pretend it can always discover those values.
+
+Without the optional companion, Solar should expose a clear target-FPS control, with `120` as the default and common targets such as 30, 60, 75, 90, 120, 144, 165, and 240 available where practical.
+
+The exact option representation must be verified against the final `shaders.properties` design before implementation.
+
+### 10.3 Controller behavior
+
+For any selected target:
+
+- derive the nominal frame interval from the selected target,
+- reserve safety headroom rather than filling the complete interval,
+- use smoothed or windowed frame-time measurements,
+- reduce quality only after sustained evidence that the usable budget is exceeded,
+- restore quality more conservatively than it removes it,
+- use hysteresis and rate limits to prevent oscillation,
+- preserve the protected cinematic quality floor,
+- allow higher quality at lower targets when headroom exists.
+
+Exact thresholds, reserve ratios, time windows, and control equations belong to the dedicated adaptive-performance specification and must be measured rather than guessed.
 
 ## 11. Performance Engineering Rules
 
@@ -368,6 +421,10 @@ Record, where measurable:
 - render distance,
 - shader profile,
 - AutoTune state,
+- selected target FPS,
+- configured game FPS cap where known,
+- VSync state where known,
+- monitor refresh rate where known,
 - Minecraft version,
 - Iris version,
 - Sodium version where applicable,
@@ -509,8 +566,9 @@ The workspace milestone is complete when:
 5. The repository contains no speculative rendering implementation.
 6. Future ChatGPT sessions can immediately discover where Solar source and durable decisions belong.
 7. Branch conventions are documented.
-8. The 120 FPS mainstream target and adaptive-quality philosophy are durable repository requirements.
-9. The workspace is ready for a separate shader-foundation architectural cycle.
+8. The 120 FPS mainstream baseline and adaptive-quality philosophy are durable repository requirements.
+9. Lower intentional FPS targets explicitly unlock larger rendering budgets rather than being treated as performance failures.
+10. The workspace is ready for a separate shader-foundation architectural cycle.
 
 ## 19. External Technical References
 
@@ -522,6 +580,7 @@ Current Iris documentation was consulted through Context7 using `/irisshaders/do
 - `viewWidth`,
 - `viewHeight`,
 - `far`,
+- the documented shader-visible frame timing surface relevant to cap detection,
 - `shaders.properties` profiles,
 - sliders,
 - conditional program enablement,
