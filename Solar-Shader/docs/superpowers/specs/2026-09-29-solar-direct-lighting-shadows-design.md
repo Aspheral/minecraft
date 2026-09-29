@@ -635,7 +635,7 @@ Opaque blocked fraction contributes zero direct transmittance.
 
 When `transparentBlockedFraction` is meaningfully above zero, Solar performs a **conditional central/representative `shadowcolor0` lookup**, rather than sampling color once per PCF tap.
 
-If the representative color sample has effectively zero alpha even though the PCF footprint detected transparent blocking, Solar uses a neutral scalar transmission fallback derived from the transparent blocked fraction rather than introducing arbitrary color. This prevents undefined/clear-buffer color from tinting a shadow edge.
+If the representative color sample has effectively zero alpha even though the PCF footprint detected transparent blocking, Solar uses a deterministic neutral fallback that transmits 50% of only the transparent-blocked fraction: `fallback = unblockedFraction + 0.5 * transparentBlockedFraction`. This prevents undefined/clear-buffer color from tinting a shadow edge while remaining conservative.
 
 The transparent transmission approximation is based on current Iris semantics and Solar's linear-light working contract:
 
