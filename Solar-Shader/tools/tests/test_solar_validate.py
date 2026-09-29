@@ -212,6 +212,34 @@ class SolarValidateTests(unittest.TestCase):
         self.assertIn("surface.surfaceClass = 2;", shared)
         self.assertIn("surface.surfaceClass = 1;", shared)
         self.assertLess(shared.index("discard;"), shared.index("sceneColor ="))
+    def test_fullscreen_pipeline_contract(self):
+        repo = self._repo()
+        shaders = repo / "Solar-Shader" / "shaders"
+
+        for program in ("deferred", "composite", "final"):
+            self.assertTrue((shaders / f"{program}.vsh").is_file(), program)
+            self.assertTrue((shaders / f"{program}.fsh").is_file(), program)
+
+        deferred = expand_shader(shaders / "deferred.fsh", shaders)
+        composite = expand_shader(shaders / "composite.fsh", shaders)
+        final = expand_shader(shaders / "final.fsh", shaders)
+
+        self.assertIn("/* RENDERTARGETS: 0 */", deferred)
+        self.assertIn("/* RENDERTARGETS: 0 */", composite)
+        self.assertNotIn("RENDERTARGETS: 0,1", deferred)
+        self.assertNotIn("RENDERTARGETS: 0,1", composite)
+
+        self.assertIn("uniform sampler2D depthtex1;", composite)
+        self.assertNotIn("uniform sampler2D depthtex0;", composite)
+        self.assertIn("uniform mat4 gbufferProjectionInverse;", composite)
+        self.assertNotIn("inverse(", composite)
+
+        for value in range(5):
+            self.assertIn(f"#if DEBUG_VIEW == {value}", composite)
+
+        self.assertIn("solarToDisplayApprox", final)
+        for forbidden in ("ACES", "Reinhard", "filmic", "bloom", "exposure", "color grading"):
+            self.assertNotIn(forbidden, final.lower() if forbidden.islower() else final)
 
 
 if __name__ == "__main__":
