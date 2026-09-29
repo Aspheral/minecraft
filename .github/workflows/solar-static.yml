@@ -32,7 +32,7 @@ jobs:
           echo "b9b1f96acb898a62251b171f7695efcecfc206a530299054071919b06820f657  $archive" | sha256sum -c -
           mkdir -p "$root"
           tar -xzf "$archive" -C "$root"
-          bin="$(find "$root" -type f -name glslangValidator -print -quit)"
+          bin="$(find "$root" -type f -name glslang -print -quit)"
           test -n "$bin"
           chmod +x "$bin"
           echo "GLSLANG_BIN=$bin" >> "$GITHUB_ENV"
