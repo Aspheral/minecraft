@@ -97,6 +97,39 @@ class SolarValidateTests(unittest.TestCase):
             )
             findings = validate_structure(repo)
             self.assertTrue(any(f.code == "IRIS_RESERVED_SYMBOL" for f in findings))
+    def test_foundation_configuration_contract(self):
+        repo = self._repo()
+        shaders = repo / "Solar-Shader" / "shaders"
+        props = (shaders / "shaders.properties").read_text(encoding="utf-8")
+        config = (shaders / "lib" / "config.glsl").read_text(encoding="utf-8")
+        buffers = (shaders / "lib" / "core" / "buffers.glsl").read_text(encoding="utf-8")
+        quality = (shaders / "lib" / "quality" / "quality.glsl").read_text(encoding="utf-8")
+
+        self.assertIn("#define TARGET_FPS 120 // [30 60 75 90 120 144 165 240]", config)
+        self.assertIn("#define DEBUG_VIEW 0 // [0 1 2 3 4]", config)
+        self.assertNotIn("profile.", props)
+        self.assertIn("iris.features.optional=ENTITY_TRANSLUCENT", props)
+        self.assertNotIn("iris.features.required=", props)
+        self.assertNotIn("separateEntityDraws", props)
+
+        self.assertIn("const int colortex0Format = R11F_G11F_B10F;", buffers)
+        self.assertIn("const int colortex1Format = RGB10_A2;", buffers)
+        self.assertIn("const bool colortex0Clear = true;", buffers)
+        self.assertIn("const bool colortex1Clear = true;", buffers)
+        self.assertIn("const vec4 colortex0ClearColor = vec4(0.0);", buffers)
+        self.assertIn("const vec4 colortex1ClearColor = vec4(0.0);", buffers)
+
+        for field in (
+            "global",
+            "atmosphere",
+            "clouds",
+            "shadows",
+            "reflections",
+            "indirectLight",
+            "postProcessing",
+        ):
+            self.assertIn(f"float {field};", quality)
+        self.assertIn("SolarQuality solarGetQuality()", quality)
 
 
 if __name__ == "__main__":
