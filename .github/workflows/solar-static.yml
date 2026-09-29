@@ -1,0 +1,24 @@
+name: Solar Static Validation
+
+on:
+  push:
+    paths:
+      - "Solar-Shader/**"
+      - ".github/workflows/solar-static.yml"
+  pull_request:
+    paths:
+      - "Solar-Shader/**"
+      - ".github/workflows/solar-static.yml"
+
+jobs:
+  solar-static:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run validator unit tests
+        run: python -m unittest discover -s Solar-Shader/tools/tests -p "test_*.py" -v
