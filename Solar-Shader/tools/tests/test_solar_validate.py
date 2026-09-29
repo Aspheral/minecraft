@@ -291,6 +291,77 @@ class SolarValidateTests(unittest.TestCase):
             self.assertNotIn("SOLAR_PROGRAM_TERRAIN", source)
             self.assertNotIn("SOLAR_PROGRAM_ENTITIES\n", source)
             self.assertNotIn("SOLAR_PROGRAM_BLOCK\n", source)
+    def test_complete_mode_requires_every_foundation_program_pair(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            shaders = repo / "Solar-Shader" / "shaders"
+            shaders.mkdir(parents=True)
+            (shaders / "shaders.properties").write_text("", encoding="utf-8")
+            findings = validate_structure(repo, mode="complete")
+            self.assertTrue(any(
+                f.code == "MISSING_FOUNDATION_FILE" and f.path.endswith("gbuffers_terrain.vsh")
+                for f in findings
+            ))
+
+    def test_complete_mode_requires_core_library_manifest(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            shaders = repo / "Solar-Shader" / "shaders"
+            shaders.mkdir(parents=True)
+            (shaders / "shaders.properties").write_text("", encoding="utf-8")
+            findings = validate_structure(repo, mode="complete")
+            self.assertTrue(any(
+                f.code == "MISSING_FOUNDATION_FILE" and f.path.endswith("lib/core/buffers.glsl")
+                for f in findings
+            ))
+
+    def test_complete_mode_requires_shaders_properties(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            (repo / "Solar-Shader" / "shaders").mkdir(parents=True)
+            findings = validate_structure(repo, mode="complete")
+            self.assertTrue(any(
+                f.code == "MISSING_FOUNDATION_FILE" and f.path.endswith("shaders.properties")
+                for f in findings
+            ))
+
+    def test_complete_mode_proves_translucent_roles_do_not_target_colortex1(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            shaders = repo / "Solar-Shader" / "shaders"
+            shaders.mkdir(parents=True)
+            (shaders / "shaders.properties").write_text("", encoding="utf-8")
+            (shaders / "gbuffers_water.fsh").write_text(
+                '#version 330 compatibility\n/* RENDERTARGETS: 0,1 */\n',
+                encoding="utf-8",
+            )
+            findings = validate_structure(repo, mode="complete")
+            self.assertTrue(any(f.code == "COLOR_ONLY_METADATA_TARGET" for f in findings))
+
+    def test_complete_mode_proves_metadata_roles_have_blend_off_for_colortex1(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            shaders = repo / "Solar-Shader" / "shaders"
+            shaders.mkdir(parents=True)
+            (shaders / "shaders.properties").write_text("", encoding="utf-8")
+            (shaders / "gbuffers_terrain.fsh").write_text(
+                '#version 330 compatibility\n/* RENDERTARGETS: 0,1 */\n',
+                encoding="utf-8",
+            )
+            findings = validate_structure(repo, mode="complete")
+            self.assertTrue(any(f.code == "MISSING_METADATA_BLEND_RULE" for f in findings))
+
+    def test_complete_mode_allows_only_colortex_zero_and_one(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            shaders = repo / "Solar-Shader" / "shaders"
+            shaders.mkdir(parents=True)
+            (shaders / "bad.fsh").write_text(
+                "#version 330 compatibility\nuniform sampler2D colortex7;\n",
+                encoding="utf-8",
+            )
+            findings = validate_structure(repo, mode="complete")
+            self.assertTrue(any(f.code == "COLORTEX_RANGE" for f in findings))
 
 
 if __name__ == "__main__":
