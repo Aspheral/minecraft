@@ -38,7 +38,7 @@ Implemented foundation pieces include:
 - compact `RGB10_A2` SurfaceData in `colortex1`,
 - depth-based view-position reconstruction without a position render target,
 - explicit opaque/cutout versus forward-translucent ownership,
-- 21 thin Iris program pairs backed by shared GLSL modules,
+- 22 thin Iris program pairs backed by shared GLSL modules,
 - developer debug views,
 - `TARGET_FPS` configuration plumbing,
 - the static Solar quality-consumer ABI,

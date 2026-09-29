@@ -247,6 +247,7 @@ class SolarValidateTests(unittest.TestCase):
         programs = [
             "gbuffers_basic",
             "gbuffers_textured",
+            "gbuffers_damagedblock",
             "gbuffers_particles",
             "gbuffers_skybasic",
             "gbuffers_skytextured",
@@ -259,6 +260,7 @@ class SolarValidateTests(unittest.TestCase):
             "gbuffers_lightning",
         ]
         alpha_preserving = {
+            "gbuffers_damagedblock",
             "gbuffers_hand_water",
             "gbuffers_water",
             "gbuffers_weather",

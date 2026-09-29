@@ -12,7 +12,7 @@ All notable Solar Shader project changes will be recorded here.
 - Added linear-light HDR scene color using `R11F_G11F_B10F` `colortex0`.
 - Added compact `RGB10_A2` SurfaceData in `colortex1`, including octahedral normals, packed block/sky light, and surface classification.
 - Added depth-based view-position reconstruction without a position render target.
-- Added 21 thin Iris program pairs backed by shared GLSL modules.
+- Added 22 thin Iris program pairs backed by shared GLSL modules.
 - Added explicit metadata-writing versus color-only/translucent render-target ownership.
 - Added debug views for normals, reconstructed position/depth, light metadata, and surface classification.
 - Added `TARGET_FPS` and `DEBUG_VIEW` Foundation configuration.

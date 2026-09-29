@@ -26,6 +26,7 @@ METADATA_PROGRAMS = (
 COLOR_ONLY_PROGRAMS = (
     "gbuffers_basic",
     "gbuffers_textured",
+    "gbuffers_damagedblock",
     "gbuffers_particles",
     "gbuffers_skybasic",
     "gbuffers_skytextured",
