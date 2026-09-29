@@ -190,6 +190,28 @@ Reasons:
 
 Foundation output remains readable rather than aesthetically final.
 
+#### 5.1.1 Color-space contract
+
+`colortex0` is Solar's **linear-light HDR working buffer**.
+
+Foundation and all later lighting math must operate in linear light. Gamma/display-encoded color must not be used as the working lighting space.
+
+Texture, vertex-color, or other source values are converted at the appropriate boundary when their source representation requires it. The Foundation implementation plan must verify the actual Iris/Minecraft source semantics before choosing conversion functions rather than assuming every input has the same transfer function.
+
+Foundation v0 does not implement Solar's artistic tone mapper. Its `final` boundary performs only the minimum display transfer needed to present the neutral linear scene readably. Later exposure, tone mapping, and color-grading specifications replace that minimal presentation path without changing the internal linear-light contract.
+
+#### 5.1.2 Foundation clear policy
+
+For Foundation v0:
+
+- `colortex0` clears every frame to black before scene rendering unless verified Iris behavior makes an equivalent clear implicit,
+- `colortex1` clears every frame to zero,
+- zero in `colortex1` decodes to the invalid/background surface class,
+- opaque/cutout geometry may write `colortex1`,
+- forward translucent programs must not target or blend into `colortex1`.
+
+Later temporal buffers may deliberately preserve history, but that is outside this Foundation contract.
+
 ### 5.2 SurfaceData
 
 `colortex1` uses `RGB10_A2` and stores Foundation v0 `SurfaceData`.
@@ -1004,8 +1026,8 @@ Unless superseded by a later approved specification:
 
 - Solar Foundation is lean hybrid-deferred.
 - Foundation owns two full-resolution color targets.
-- `colortex0` is `R11F_G11F_B10F` scene color.
-- `colortex1` is `RGB10_A2` SurfaceData.
+- `colortex0` is `R11F_G11F_B10F` linear-light HDR scene color.
+- `colortex1` is `RGB10_A2` SurfaceData and clears to zero each frame.
 - position is reconstructed from depth rather than stored,
 - opaque/cutout geometry participates in SurfaceData,
 - translucency remains forward-rendered,
