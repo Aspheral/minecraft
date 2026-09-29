@@ -4,7 +4,7 @@
 **Repository:** `Aspheral/minecraft`  
 **Project root:** `Solar-Shader/`  
 **Foundation branch:** `feat/solar-foundation`  
-**Design status:** Conversational design approved on 2026-09-29. This written specification requires user review before an implementation plan may be created.  
+**Design status:** Conversational design and written specification approved on 2026-09-29. Implementation still requires an approved implementation plan and execution method.  
 **Parent specification:** `Solar-Shader/docs/superpowers/specs/2026-09-29-solar-workspace-design.md`
 
 ## 1. Purpose
