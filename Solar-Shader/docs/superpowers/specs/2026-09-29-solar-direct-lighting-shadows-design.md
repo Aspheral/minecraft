@@ -266,6 +266,10 @@ Solar shadow fragment programs therefore do **not** use `RENDERTARGETS` to write
 
 Shadow-pass location 0 writes `shadowcolor0`.
 
+For Solar-owned shadow programs, `shadowcolor0.rgb` stores **linear-light caster color** and `shadowcolor0.a` stores the source caster alpha used by the transmission approximation. Textured shadow fragments therefore convert source RGB through Solar's established encoded-to-linear boundary before writing `shadowcolor0`.
+
+Cutout discard decisions still use source alpha before the shadow color write.
+
 Foundation color attachments remain untouched by the shadow pass.
 
 Solar uses the current Iris semantics:
@@ -631,11 +635,15 @@ Opaque blocked fraction contributes zero direct transmittance.
 
 When `transparentBlockedFraction` is meaningfully above zero, Solar performs a **conditional central/representative `shadowcolor0` lookup**, rather than sampling color once per PCF tap.
 
-The transparent transmission approximation is based on current Iris semantics:
+If the representative color sample has effectively zero alpha even though the PCF footprint detected transparent blocking, Solar uses a neutral scalar transmission fallback derived from the transparent blocked fraction rather than introducing arbitrary color. This prevents undefined/clear-buffer color from tinting a shadow edge.
+
+The transparent transmission approximation is based on current Iris semantics and Solar's linear-light working contract:
 
 ```text
-casterTransmissionRGB = shadowColor.rgb * (1 - shadowColor.a)
+casterTransmissionRGB = linearShadowColor.rgb * (1 - shadowColor.a)
 ```
+
+Because Solar writes linear RGB into `shadowcolor0`, deferred lighting does not apply a second gamma-to-linear conversion when sampling it.
 
 Conceptually:
 
