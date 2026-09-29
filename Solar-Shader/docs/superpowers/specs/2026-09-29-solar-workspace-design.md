@@ -4,7 +4,7 @@
 **Repository:** `Aspheral/minecraft`  
 **Project root:** `Solar-Shader/`  
 **Branch:** `feat/solar-workspace`  
-**Status:** Written specification awaiting user review  
+**Status:** Approved on 2026-09-29  
 **Revision:** 3 — adds refresh/frame-cap-aware AutoTune budgeting
 
 ## 1. Purpose
@@ -593,4 +593,4 @@ https://github.com/IrisShaders/docs
 
 ---
 
-After this written specification is reviewed and approved, the next required step is a dedicated implementation plan for the workspace setup. No rendering or AutoTune implementation should begin as part of that workspace plan.
+This specification was approved on 2026-09-29. The workspace implementation plan was subsequently approved and executed on `feat/solar-workspace`. Rendering and AutoTune implementation remain separate future architectural cycles.

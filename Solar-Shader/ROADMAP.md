@@ -6,7 +6,7 @@ Each substantial rendering subsystem receives its own design/specification cycle
 
 ## Milestone 0 — Workspace and Engineering Foundation
 
-Status: in progress on `feat/solar-workspace`.
+Status: complete on `feat/solar-workspace`; pending integration into `main`.
 
 Scope:
 

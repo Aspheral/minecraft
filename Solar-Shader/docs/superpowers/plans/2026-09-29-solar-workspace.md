@@ -10,6 +10,8 @@
 
 **Spec:** `Solar-Shader/docs/superpowers/specs/2026-09-29-solar-workspace-design.md`
 
+**Execution Status:** Completed on `feat/solar-workspace` on 2026-09-29 using the approved Native execution approach.
+
 ## Global Constraints
 
 - Repository: `Aspheral/minecraft`.
@@ -49,7 +51,7 @@
 - Consumes: approved workspace spec at `Solar-Shader/docs/superpowers/specs/2026-09-29-solar-workspace-design.md`.
 - Produces: canonical human/agent entry points linking to the spec and describing the monorepo/project boundary.
 
-- [ ] **Step 1: Verify the entry-point files do not already exist on `feat/solar-workspace`**
+- [x] **Step 1: Verify the entry-point files do not already exist on `feat/solar-workspace`**
 
 Use GitHub `fetch_file` for:
 - `README.md`
@@ -58,7 +60,7 @@ Use GitHub `fetch_file` for:
 
 Expected: each absent file returns not-found. If any exists, read it fully and change the plan action for that path from create to update while preserving unrelated content.
 
-- [ ] **Step 2: Create root `README.md`**
+- [x] **Step 2: Create root `README.md`**
 
 Required assertions:
 - contains `Aspheral/minecraft`,
@@ -66,7 +68,7 @@ Required assertions:
 - links to `Solar-Shader/`,
 - states that permanent projects use directories and development uses temporary branches.
 
-- [ ] **Step 3: Create `Solar-Shader/README.md`**
+- [x] **Step 3: Create `Solar-Shader/README.md`**
 
 Required assertions:
 - names the project `Solar Shader`,
@@ -78,20 +80,20 @@ Required assertions:
 - states that current workspace status is pre-renderer/scaffolding,
 - distinguishes static validation from actual Minecraft/Iris runtime verification.
 
-- [ ] **Step 4: Create `Solar-Shader/CHANGELOG.md`**
+- [x] **Step 4: Create `Solar-Shader/CHANGELOG.md`**
 
 Required assertions:
 - contains an `Unreleased` section,
 - records workspace/spec establishment,
 - does not claim any rendering feature is implemented.
 
-- [ ] **Step 5: Read back all three files and verify assertions**
+- [x] **Step 5: Read back all three files and verify assertions**
 
 Use GitHub `fetch_file` on all three paths.
 
 Expected: all paths exist and every required assertion is present.
 
-- [ ] **Step 6: Commit task**
+- [x] **Step 6: Commit task**
 
 Commit message:
 
@@ -113,13 +115,13 @@ docs: establish Solar Shader workspace entry points
 - Consumes: product/performance/AutoTune contracts from the approved spec.
 - Produces: durable ownership boundaries for architecture decisions, benchmark methodology/results, development tooling, and the optional companion.
 
-- [ ] **Step 1: Verify the four boundary files do not already exist**
+- [x] **Step 1: Verify the four boundary files do not already exist**
 
 Use GitHub `fetch_file` on each path.
 
 Expected: not-found for absent files. If any exists, read it fully before updating.
 
-- [ ] **Step 2: Create architecture README**
+- [x] **Step 2: Create architecture README**
 
 Required assertions:
 - architecture docs are for durable rendering/system decisions,
@@ -128,7 +130,7 @@ Required assertions:
 - names performance as a first-class architectural constraint,
 - states AutoTune must protect a minimum cinematic quality floor.
 
-- [ ] **Step 3: Create benchmark README**
+- [x] **Step 3: Create benchmark README**
 
 Required assertions:
 - defines 1080p mainstream and 1440p upper-mainstream benchmark profiles,
@@ -141,14 +143,14 @@ Required assertions:
 - states total frame budget is not entirely available to the shader,
 - prohibits presenting static/synthetic checks as measured in-game FPS.
 
-- [ ] **Step 4: Create tools README**
+- [x] **Step 4: Create tools README**
 
 Required assertions:
 - reserves `tools/` for development/validation/benchmark tooling,
 - prohibits claiming generic GLSL/static checks prove Iris runtime correctness,
 - states tools should be added only when a later plan needs them.
 
-- [ ] **Step 5: Create Solar AutoTune companion README**
+- [x] **Step 5: Create Solar AutoTune companion README**
 
 Required assertions:
 - companion is optional,
@@ -159,11 +161,11 @@ Required assertions:
 - states exact Iris/Sodium integration must be verified in a later dedicated architecture cycle,
 - contains no invented API or implementation claim.
 
-- [ ] **Step 6: Read back all four files and verify assertions**
+- [x] **Step 6: Read back all four files and verify assertions**
 
 Expected: every path exists and all required content is present.
 
-- [ ] **Step 7: Commit task**
+- [x] **Step 7: Commit task**
 
 Commit message:
 
@@ -183,13 +185,13 @@ docs: define Solar architecture and AutoTune boundaries
 - Consumes: Iris directory assumptions and Superpowers workflow from the approved spec.
 - Produces: clear future locations for reusable GLSL and implementation plans.
 
-- [ ] **Step 1: Verify both files do not already exist**
+- [x] **Step 1: Verify both files do not already exist**
 
 Use GitHub `fetch_file`.
 
 Expected: not-found unless a prior partial setup created them.
 
-- [ ] **Step 2: Create shader library README**
+- [x] **Step 2: Create shader library README**
 
 Required assertions:
 - this directory is reserved for reusable GLSL includes,
@@ -197,7 +199,7 @@ Required assertions:
 - future files must follow verified Iris conventions,
 - version-sensitive behavior should be checked through current documentation before implementation.
 
-- [ ] **Step 3: Create plans README**
+- [x] **Step 3: Create plans README**
 
 Required assertions:
 - approved implementation plans live here,
@@ -205,11 +207,11 @@ Required assertions:
 - substantial new systems follow brainstorm → spec → plan → implement → verify → review,
 - GitHub state overrides conversation recollection.
 
-- [ ] **Step 4: Read back and verify both files**
+- [x] **Step 4: Read back and verify both files**
 
 Expected: both paths exist and assertions are present.
 
-- [ ] **Step 5: Commit task**
+- [x] **Step 5: Commit task**
 
 Commit message:
 
@@ -229,13 +231,13 @@ docs: establish Solar shader and planning boundaries
 - Consumes: all workspace entry-point and boundary documentation from Tasks 1–3.
 - Produces: compact durable instructions that let later normal-ChatGPT sessions resume correctly without depending on conversation memory.
 
-- [ ] **Step 1: Verify `AGENT.md` and `ROADMAP.md` do not already exist**
+- [x] **Step 1: Verify `AGENT.md` and `ROADMAP.md` do not already exist**
 
 Use GitHub `fetch_file`.
 
 Expected: not-found unless previously created.
 
-- [ ] **Step 2: Create `Solar-Shader/AGENT.md`**
+- [x] **Step 2: Create `Solar-Shader/AGENT.md`**
 
 Required assertions:
 - GitHub is the canonical source of truth,
@@ -248,7 +250,7 @@ Required assertions:
 - respect the target-FPS-aware AutoTune contract,
 - do not ask the user to do work an available connected tool can perform.
 
-- [ ] **Step 3: Create `Solar-Shader/ROADMAP.md`**
+- [x] **Step 3: Create `Solar-Shader/ROADMAP.md`**
 
 Required assertions:
 - milestone 0: workspace/documentation,
@@ -257,11 +259,11 @@ Required assertions:
 - each major rendering subsystem gets its own design/spec cycle before implementation,
 - roadmap ordering is directional rather than a claim that every listed feature is already approved.
 
-- [ ] **Step 4: Read back both files and verify assertions**
+- [x] **Step 4: Read back both files and verify assertions**
 
 Expected: both files exist and provide enough state for a new ChatGPT session to resume without relying on prior-chat memory.
 
-- [ ] **Step 5: Commit task**
+- [x] **Step 5: Commit task**
 
 Commit message:
 
@@ -280,7 +282,7 @@ docs: add Solar agent continuity and roadmap
 - Consumes: all outputs from Tasks 1–4.
 - Produces: evidence that the workspace matches the approved spec and contains no premature implementation.
 
-- [ ] **Step 1: Verify every required workspace path**
+- [x] **Step 1: Verify every required workspace path**
 
 Use GitHub `fetch_file` for:
 
@@ -302,7 +304,7 @@ Solar-Shader/tools/README.md
 
 Expected: every path exists.
 
-- [ ] **Step 2: Verify target-FPS-aware AutoTune invariants**
+- [x] **Step 2: Verify target-FPS-aware AutoTune invariants**
 
 Confirm repository documentation states all of the following:
 
@@ -317,7 +319,7 @@ Confirm repository documentation states all of the following:
 
 Expected: all invariants present.
 
-- [ ] **Step 3: Verify no premature implementation was introduced**
+- [x] **Step 3: Verify no premature implementation was introduced**
 
 Inspect files added on this branch.
 
@@ -325,21 +327,21 @@ Expected:
 - no `.vsh`, `.fsh`, `.csh`, executable AutoTune implementation, or fabricated benchmark result was introduced by this workspace plan,
 - documentation may mention future files/features but must not claim they already work.
 
-- [ ] **Step 4: Verify project isolation**
+- [x] **Step 4: Verify project isolation**
 
 Expected:
 - Solar-specific workspace files live under `Solar-Shader/` except the monorepo root `README.md`,
 - no unrelated Minecraft project path is modified.
 
-- [ ] **Step 5: Record verification outcome**
+- [x] **Step 5: Record verification outcome**
 
 If all checks pass, update `Solar-Shader/CHANGELOG.md` under `Unreleased` to state that the workspace scaffolding milestone has been established. Do not claim runtime shader functionality.
 
-- [ ] **Step 6: Read back the changelog and final required paths**
+- [x] **Step 6: Read back the changelog and final required paths**
 
 Expected: workspace status is accurately documented and all required files remain readable.
 
-- [ ] **Step 7: Commit verification/status update**
+- [x] **Step 7: Commit verification/status update**
 
 Commit message:
 
