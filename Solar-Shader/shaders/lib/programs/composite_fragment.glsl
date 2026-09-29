@@ -18,20 +18,12 @@ in vec2 texcoord;
 layout(location = 0) out vec4 sceneColor;
 
 void main() {
-    vec4 baseColor = texture(colortex0, texcoord);
-    SurfaceData surface = solarDecodeSurface(texture(colortex1, texcoord));
-    float depth = texture(depthtex1, texcoord).r;
-    vec3 viewPosition = solarReconstructViewPosition(
-        texcoord,
-        depth,
-        gbufferProjectionInverse
-    );
-
 #if DEBUG_VIEW == 0
-    sceneColor = baseColor;
+    sceneColor = texture(colortex0, texcoord);
 #endif
 
 #if DEBUG_VIEW == 1
+    SurfaceData surface = solarDecodeSurface(texture(colortex1, texcoord));
     sceneColor = vec4(
         surface.surfaceClass == 0 ? vec3(0.0) : solarDebugNormal(surface),
         1.0
@@ -39,10 +31,17 @@ void main() {
 #endif
 
 #if DEBUG_VIEW == 2
+    float depth = texture(depthtex1, texcoord).r;
+    vec3 viewPosition = solarReconstructViewPosition(
+        texcoord,
+        depth,
+        gbufferProjectionInverse
+    );
     sceneColor = vec4(solarDebugPosition(viewPosition, far), 1.0);
 #endif
 
 #if DEBUG_VIEW == 3
+    SurfaceData surface = solarDecodeSurface(texture(colortex1, texcoord));
     sceneColor = vec4(
         surface.surfaceClass == 0 ? vec3(0.0) : solarDebugLight(surface),
         1.0
@@ -50,6 +49,7 @@ void main() {
 #endif
 
 #if DEBUG_VIEW == 4
+    SurfaceData surface = solarDecodeSurface(texture(colortex1, texcoord));
     sceneColor = vec4(solarDebugSurfaceClass(surface), 1.0);
 #endif
 }
