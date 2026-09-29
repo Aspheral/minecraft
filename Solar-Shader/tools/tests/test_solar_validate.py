@@ -240,6 +240,57 @@ class SolarValidateTests(unittest.TestCase):
         self.assertIn("solarToDisplayApprox", final)
         for forbidden in ("ACES", "Reinhard", "filmic", "bloom", "exposure", "color grading"):
             self.assertNotIn(forbidden, final.lower() if forbidden.islower() else final)
+    def test_color_only_and_translucency_contract(self):
+        repo = self._repo()
+        shaders = repo / "Solar-Shader" / "shaders"
+        props = (shaders / "shaders.properties").read_text(encoding="utf-8")
+        programs = [
+            "gbuffers_basic",
+            "gbuffers_textured",
+            "gbuffers_particles",
+            "gbuffers_skybasic",
+            "gbuffers_skytextured",
+            "gbuffers_hand",
+            "gbuffers_hand_water",
+            "gbuffers_water",
+            "gbuffers_weather",
+            "gbuffers_entities_translucent",
+            "gbuffers_block_translucent",
+            "gbuffers_lightning",
+        ]
+        alpha_preserving = {
+            "gbuffers_hand_water",
+            "gbuffers_water",
+            "gbuffers_weather",
+            "gbuffers_entities_translucent",
+            "gbuffers_block_translucent",
+        }
+
+        self.assertIn("iris.features.optional=ENTITY_TRANSLUCENT", props)
+        self.assertNotIn("iris.features.required=ENTITY_TRANSLUCENT", props)
+        self.assertNotIn("separateEntityDraws", props)
+
+        for program in programs:
+            vsh = shaders / f"{program}.vsh"
+            fsh = shaders / f"{program}.fsh"
+            self.assertTrue(vsh.is_file(), program)
+            self.assertTrue(fsh.is_file(), program)
+
+            source = fsh.read_text(encoding="utf-8")
+            self.assertIn("/* RENDERTARGETS: 0 */", source)
+            self.assertNotIn("RENDERTARGETS: 0,1", source)
+            self.assertNotIn("colortex1", source)
+            self.assertNotIn(f"blend.{program}.colortex1=off", props)
+
+            expanded = expand_shader(fsh, shaders)
+            if program in alpha_preserving:
+                self.assertIn("sourceColor.a", expanded)
+
+        for program in ("gbuffers_particles", "gbuffers_lightning", "gbuffers_skybasic", "gbuffers_skytextured"):
+            source = (shaders / f"{program}.fsh").read_text(encoding="utf-8")
+            self.assertNotIn("SOLAR_PROGRAM_TERRAIN", source)
+            self.assertNotIn("SOLAR_PROGRAM_ENTITIES\n", source)
+            self.assertNotIn("SOLAR_PROGRAM_BLOCK\n", source)
 
 
 if __name__ == "__main__":
