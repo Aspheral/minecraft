@@ -590,9 +590,9 @@ Do not use hardware comparison samplers.
 If transparent fraction > epsilon:
 - sample representative central `shadowcolor0`,
 - if alpha > epsilon, use `color.rgb * (1 - alpha)`,
-- otherwise use neutral scalar transmission `vec3(1 - alphaFallback)` derived from the transparent blocked fraction, never clear-buffer RGB.
+- otherwise return the deterministic neutral fallback `vec3(unblockedFraction + 0.5 * transparentBlockedFraction)` for the shadow component, never clear-buffer RGB.
 
-Conceptual final:
+Normal colored path:
 
 ```text
 transmittance =
@@ -600,7 +600,7 @@ transmittance =
   + transparentBlockedFraction * casterTransmissionRGB
 ```
 
-clamped to [0,1].
+Both paths clamp to [0,1].
 
 - [ ] **Step 5: Integrate receiver transform, bias, fade, and early-outs in deferred**
 
