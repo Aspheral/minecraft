@@ -20,5 +20,32 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Fetch pinned glslang 16.5.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/glslang.tar.gz"
+          root="$RUNNER_TEMP/glslang"
+          curl --fail --location --retry 3 \
+            https://github.com/KhronosGroup/glslang/releases/download/16.5.0/glslang-16.5.0-linux-x86_64-release.tar.gz \
+            --output "$archive"
+          echo "b9b1f96acb898a62251b171f7695efcecfc206a530299054071919b06820f657  $archive" | sha256sum -c -
+          mkdir -p "$root"
+          tar -xzf "$archive" -C "$root"
+          bin="$(find "$root" -type f -name glslangValidator -print -quit)"
+          test -n "$bin"
+          chmod +x "$bin"
+          echo "GLSLANG_BIN=$bin" >> "$GITHUB_ENV"
       - name: Run validator unit tests
         run: python -m unittest discover -s Solar-Shader/tools/tests -p "test_*.py" -v
+      - name: Run Solar S0 and S1 validation
+        run: python Solar-Shader/tools/solar_validate.py --repo-root . --mode incremental --glslang "$GLSLANG_BIN"
+      - name: Record evidence boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Solar validation evidence"
+            echo
+            echo "S0/S1 static validation only. Passing does not prove Iris runtime compatibility, visual quality, or FPS."
+          } >> "$GITHUB_STEP_SUMMARY"
