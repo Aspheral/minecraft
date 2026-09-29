@@ -15,7 +15,6 @@ uniform float far;
 
 in vec2 texcoord;
 
-/* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 sceneColor;
 
 void main() {
