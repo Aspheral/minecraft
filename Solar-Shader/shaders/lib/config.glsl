@@ -1,0 +1,7 @@
+#ifndef SOLAR_CONFIG_GLSL
+#define SOLAR_CONFIG_GLSL
+
+#define TARGET_FPS 120 // [30 60 75 90 120 144 165 240]
+#define DEBUG_VIEW 0 // [0 1 2 3 4]
+
+#endif
