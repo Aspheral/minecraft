@@ -11,8 +11,54 @@ from pathlib import Path
 INCLUDE_RE = re.compile(r'^\s*#include\s+"([^"]+)"\s*$')
 COLORTEX_RE = re.compile(r'\bcolortex(\d+)\b')
 IRIS_RESERVED_RE = re.compile(r'\b(?:iris_[A-Za-z0-9_]*|irisMain[A-Za-z0-9_]*|moj_import[A-Za-z0-9_]*)\b')
+RENDERTARGETS_RE = re.compile(r'/\*\s*RENDERTARGETS:\s*([0-9, ]+)\*/')
 FORBIDDEN_REQUIRED_FEATURES = {"COMPUTE_SHADERS", "SSBO", "CUSTOM_IMAGES"}
 WORLD_DIRS = {"world0", "world-1", "world1"}
+
+METADATA_PROGRAMS = (
+    "gbuffers_textured_lit",
+    "gbuffers_terrain",
+    "gbuffers_terrain_solid",
+    "gbuffers_terrain_cutout",
+    "gbuffers_entities",
+    "gbuffers_block",
+)
+COLOR_ONLY_PROGRAMS = (
+    "gbuffers_basic",
+    "gbuffers_textured",
+    "gbuffers_particles",
+    "gbuffers_skybasic",
+    "gbuffers_skytextured",
+    "gbuffers_hand",
+    "gbuffers_hand_water",
+    "gbuffers_water",
+    "gbuffers_weather",
+    "gbuffers_entities_translucent",
+    "gbuffers_block_translucent",
+    "gbuffers_lightning",
+)
+FULLSCREEN_PROGRAMS = ("deferred", "composite", "final")
+ALL_PROGRAMS = METADATA_PROGRAMS + COLOR_ONLY_PROGRAMS + FULLSCREEN_PROGRAMS
+
+REQUIRED_LIBRARIES = (
+    "lib/config.glsl",
+    "lib/core/buffers.glsl",
+    "lib/core/color.glsl",
+    "lib/core/space.glsl",
+    "lib/core/encoding.glsl",
+    "lib/core/compatibility.glsl",
+    "lib/surface/surface_data.glsl",
+    "lib/surface/surface_encode.glsl",
+    "lib/surface/surface_decode.glsl",
+    "lib/quality/quality.glsl",
+    "lib/debug/debug_view.glsl",
+    "lib/programs/gbuffer_vertex.glsl",
+    "lib/programs/gbuffer_fragment.glsl",
+    "lib/programs/fullscreen_vertex.glsl",
+    "lib/programs/deferred_fragment.glsl",
+    "lib/programs/composite_fragment.glsl",
+    "lib/programs/final_fragment.glsl",
+)
 
 VALIDATOR_PREAMBLE = """#define R11F_G11F_B10F 1
 #define RGB10_A2 2
@@ -98,6 +144,77 @@ def _scan_required_features(properties: Path) -> list[Finding]:
     return findings
 
 
+def _targets(path: Path) -> tuple[int, ...] | None:
+    if not path.is_file():
+        return None
+    match = RENDERTARGETS_RE.search(path.read_text(encoding="utf-8"))
+    if not match:
+        return None
+    return tuple(int(value.strip()) for value in match.group(1).split(","))
+
+
+def _missing(path: Path) -> Finding:
+    return Finding("MISSING_FOUNDATION_FILE", str(path), "required Foundation file is missing")
+
+
+def _validate_complete_manifest(shaders: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    properties = shaders / "shaders.properties"
+
+    if not properties.is_file():
+        findings.append(_missing(properties))
+
+    for program in ALL_PROGRAMS:
+        for suffix in (".vsh", ".fsh"):
+            path = shaders / f"{program}{suffix}"
+            if not path.is_file():
+                findings.append(_missing(path))
+
+    for relative in REQUIRED_LIBRARIES:
+        path = shaders / relative
+        if not path.is_file():
+            findings.append(_missing(path))
+
+    props_text = properties.read_text(encoding="utf-8") if properties.is_file() else ""
+
+    for program in METADATA_PROGRAMS:
+        fragment = shaders / f"{program}.fsh"
+        if fragment.is_file():
+            if _targets(fragment) != (0, 1):
+                findings.append(Finding(
+                    "METADATA_TARGET_CONTRACT",
+                    str(fragment),
+                    "metadata program must target exactly colortex0,colortex1",
+                ))
+            rule = f"blend.{program}.colortex1=off"
+            if rule not in props_text:
+                findings.append(Finding(
+                    "MISSING_METADATA_BLEND_RULE",
+                    str(properties),
+                    f"missing required rule: {rule}",
+                ))
+
+    for program in COLOR_ONLY_PROGRAMS:
+        fragment = shaders / f"{program}.fsh"
+        if fragment.is_file() and _targets(fragment) != (0,):
+            findings.append(Finding(
+                "COLOR_ONLY_METADATA_TARGET",
+                str(fragment),
+                "color-only/translucent program must target exactly colortex0",
+            ))
+
+    for program in ("deferred", "composite"):
+        fragment = shaders / f"{program}.fsh"
+        if fragment.is_file() and _targets(fragment) != (0,):
+            findings.append(Finding(
+                "FULLSCREEN_TARGET_CONTRACT",
+                str(fragment),
+                f"{program} must target exactly colortex0",
+            ))
+
+    return findings
+
+
 def validate_structure(repo_root: Path, mode: str = "incremental") -> list[Finding]:
     if mode not in {"incremental", "complete"}:
         raise ValueError(f"unknown validation mode: {mode}")
@@ -105,6 +222,10 @@ def validate_structure(repo_root: Path, mode: str = "incremental") -> list[Findi
     repo_root = repo_root.resolve()
     shaders = repo_root / "Solar-Shader" / "shaders"
     findings: list[Finding] = []
+
+    if mode == "complete":
+        findings.extend(_validate_complete_manifest(shaders))
+
     if not shaders.exists():
         return findings
 
@@ -135,6 +256,20 @@ def validate_structure(repo_root: Path, mode: str = "incremental") -> list[Findi
                 str(path),
                 f"Solar symbol collides with Iris-reserved pattern: {match.group(0)}",
             ))
+
+    for entry in sorted((*shaders.glob("*.vsh"), *shaders.glob("*.fsh"))):
+        source = entry.read_text(encoding="utf-8")
+        first = next((line.strip() for line in source.splitlines() if line.strip()), "")
+        if not first.startswith("#version"):
+            findings.append(Finding(
+                "SHADER_VERSION",
+                str(entry),
+                "root shader must begin with #version",
+            ))
+        try:
+            expand_shader(entry, shaders)
+        except (ValueError, FileNotFoundError) as exc:
+            findings.append(Finding("INCLUDE_GRAPH", str(entry), str(exc)))
 
     return findings
 
@@ -207,20 +342,28 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Solar Foundation static validator")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--mode", choices=("incremental", "complete"), default="incremental")
+    parser.add_argument("--level", choices=("all", "s0", "s1"), default="all")
     parser.add_argument("--glslang", type=Path)
     args = parser.parse_args(argv)
 
-    s0 = validate_structure(args.repo_root, args.mode)
-    ok = _print_findings("S0", s0)
+    ok = True
 
-    if args.glslang:
-        if not args.glslang.is_file():
-            print(f"S1: FAIL glslangValidator not found: {args.glslang}")
+    if args.level in {"all", "s0"}:
+        s0 = validate_structure(args.repo_root, args.mode)
+        ok = _print_findings("S0", s0) and ok
+
+    if args.level in {"all", "s1"}:
+        if not args.glslang:
+            if args.level == "s1":
+                print("S1: FAIL (--glslang is required for --level s1)")
+                return 1
+            print("S1: SKIP (no --glslang supplied)")
+        elif not args.glslang.is_file():
+            print(f"S1: FAIL glslang executable not found: {args.glslang}")
             return 1
-        s1 = validate_glsl(args.repo_root, args.glslang)
-        ok = _print_findings("S1", s1) and ok
-    else:
-        print("S1: SKIP (no --glslang supplied)")
+        else:
+            s1 = validate_glsl(args.repo_root, args.glslang)
+            ok = _print_findings("S1", s1) and ok
 
     print("Static validation only. Passing does not prove Iris runtime compatibility, visual quality, or FPS.")
     return 0 if ok else 1
