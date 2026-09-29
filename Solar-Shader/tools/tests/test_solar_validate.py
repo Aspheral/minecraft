@@ -291,6 +291,39 @@ class SolarValidateTests(unittest.TestCase):
             self.assertNotIn("SOLAR_PROGRAM_TERRAIN", source)
             self.assertNotIn("SOLAR_PROGRAM_ENTITIES\n", source)
             self.assertNotIn("SOLAR_PROGRAM_BLOCK\n", source)
+    def test_damagedblock_overlay_is_color_only_not_metadata_fallback(self):
+        repo = self._repo()
+        shaders = repo / "Solar-Shader" / "shaders"
+        vertex = shaders / "gbuffers_damagedblock.vsh"
+        fragment = shaders / "gbuffers_damagedblock.fsh"
+
+        self.assertTrue(vertex.is_file())
+        self.assertTrue(fragment.is_file())
+
+        source = fragment.read_text(encoding="utf-8")
+        self.assertIn("#define SOLAR_PROGRAM_DAMAGEDBLOCK", source)
+        self.assertIn("/* RENDERTARGETS: 0 */", source)
+        self.assertNotIn("RENDERTARGETS: 0,1", source)
+
+        shared = (shaders / "lib" / "programs" / "gbuffer_fragment.glsl").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(
+            shared,
+            r"#if[^\n]*SOLAR_PROGRAM_DAMAGEDBLOCK[^\n]*\n#define SOLAR_ROLE_PRESERVE_ALPHA",
+        )
+        self.assertNotRegex(
+            shared,
+            r"#if[^\n]*SOLAR_PROGRAM_DAMAGEDBLOCK[^\n]*\n#define SOLAR_ROLE_METADATA",
+        )
+
+        findings = validate_structure(repo, mode="complete")
+        self.assertFalse(any(
+            finding.code in {"MISSING_FOUNDATION_FILE", "COLOR_ONLY_METADATA_TARGET"}
+            and "damagedblock" in finding.path
+            for finding in findings
+        ))
+
     def test_complete_mode_requires_every_foundation_program_pair(self):
         with tempfile.TemporaryDirectory() as td:
             repo = Path(td)
