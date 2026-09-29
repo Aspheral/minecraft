@@ -36,10 +36,15 @@ jobs:
           test -n "$bin"
           chmod +x "$bin"
           echo "GLSLANG_BIN=$bin" >> "$GITHUB_ENV"
+          echo "GLSLANG_VERSION=$("$bin" --version | head -n 1)" >> "$GITHUB_ENV"
       - name: Run validator unit tests
         run: python -m unittest discover -s Solar-Shader/tools/tests -p "test_*.py" -v
-      - name: Run Solar S0 and S1 validation
-        run: python Solar-Shader/tools/solar_validate.py --repo-root . --mode incremental --glslang "$GLSLANG_BIN"
+      - name: Run Solar S0 complete validation
+        id: s0
+        run: python Solar-Shader/tools/solar_validate.py --repo-root . --mode complete --level s0
+      - name: Run Solar S1 generic GLSL validation
+        id: s1
+        run: python Solar-Shader/tools/solar_validate.py --repo-root . --mode complete --level s1 --glslang "$GLSLANG_BIN"
       - name: Record evidence boundary
         if: always()
         shell: bash
@@ -47,5 +52,10 @@ jobs:
           {
             echo "## Solar validation evidence"
             echo
+            echo "- S0: ${{ steps.s0.outcome }}"
+            echo "- S1: ${{ steps.s1.outcome }}"
+            echo "- glslang: `$GLSLANG_VERSION`"
+            echo
             echo "S0/S1 static validation only. Passing does not prove Iris runtime compatibility, visual quality, or FPS."
+            echo "I0/I1 were not performed by this workflow."
           } >> "$GITHUB_STEP_SUMMARY"
