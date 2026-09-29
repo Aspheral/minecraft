@@ -5,7 +5,7 @@
 **Project root:** `Solar-Shader/`  
 **Design branch:** `feat/solar-direct-lighting-shadows`  
 **Baseline:** `main` at Foundation merge commit `b5f7d05fc4f3e3a2024c7a5d75d3c92f33ddf281`  
-**Design status:** Conversational Sections 1 and 2 approved on 2026-09-29. This written specification requires user review before an implementation plan may be created.  
+**Design status:** Conversational design and written specification approved on 2026-09-29. Implementation still requires an approved implementation plan and execution method.  
 **Parent specifications:**  
 - `Solar-Shader/docs/superpowers/specs/2026-09-29-solar-workspace-design.md`
 - `Solar-Shader/docs/superpowers/specs/2026-09-29-solar-foundation-design.md`
@@ -712,7 +712,13 @@ The active celestial source switches between sun and moon around the horizon.
 
 Solar prevents the source switch from producing a visible energy discontinuity by modulating direct intensity with celestial elevation.
 
-The elevation term is derived from the normalized view-space `shadowLightPosition` direction.
+The elevation term is derived camera-invariantly in view space by comparing the normalized celestial direction to Iris's view-space world-up vector:
+
+```glsl
+dot(normalize(shadowLightPosition), normalize(upPosition))
+```
+
+Using `shadowLightPosition.y` directly is forbidden because view-space Y changes with camera orientation. An equivalent player-space transform is acceptable if it is mathematically identical.
 
 Required behavior:
 
