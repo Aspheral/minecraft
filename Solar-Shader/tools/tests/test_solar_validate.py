@@ -166,6 +166,52 @@ class SolarValidateTests(unittest.TestCase):
                 continue
             text = path.read_text(encoding="utf-8")
             self.assertNotRegex(text, r"colortex1\s*\.[rgba]")
+    def test_opaque_program_contract(self):
+        repo = self._repo()
+        shaders = repo / "Solar-Shader" / "shaders"
+        props = (shaders / "shaders.properties").read_text(encoding="utf-8")
+        metadata_programs = [
+            "gbuffers_textured_lit",
+            "gbuffers_terrain",
+            "gbuffers_terrain_solid",
+            "gbuffers_terrain_cutout",
+            "gbuffers_entities",
+            "gbuffers_block",
+        ]
+
+        for program in metadata_programs:
+            vsh = shaders / f"{program}.vsh"
+            fsh = shaders / f"{program}.fsh"
+            self.assertTrue(vsh.is_file(), program)
+            self.assertTrue(fsh.is_file(), program)
+
+            for wrapper in (vsh, fsh):
+                lines = [
+                    line.strip()
+                    for line in wrapper.read_text(encoding="utf-8").splitlines()
+                    if line.strip() and not line.strip().startswith("//")
+                ]
+                self.assertLessEqual(len(lines), 12)
+                roles = [line for line in lines if line.startswith("#define SOLAR_PROGRAM_")]
+                self.assertEqual(len(roles), 1)
+
+            expanded = expand_shader(fsh, shaders)
+            self.assertIn("/* RENDERTARGETS: 0,1 */", expanded)
+            self.assertIn("solarToLinearApprox", expanded)
+            self.assertIn("solarEncodeSurface", expanded)
+            self.assertIn("alphaTestRef", expanded)
+            self.assertNotIn("texture(lightmap", expanded)
+
+            rule = f"blend.{program}.colortex1=off"
+            self.assertIn(rule, props)
+
+        cutout_text = (shaders / "gbuffers_terrain_cutout.fsh").read_text(encoding="utf-8")
+        self.assertIn("#define SOLAR_PROGRAM_TERRAIN_CUTOUT", cutout_text)
+        shared = (shaders / "lib" / "programs" / "gbuffer_fragment.glsl").read_text(encoding="utf-8")
+        self.assertIn("#ifdef SOLAR_PROGRAM_TERRAIN_CUTOUT", shared)
+        self.assertIn("surface.surfaceClass = 2;", shared)
+        self.assertIn("surface.surfaceClass = 1;", shared)
+        self.assertLess(shared.index("discard;"), shared.index("sceneColor ="))
 
 
 if __name__ == "__main__":
