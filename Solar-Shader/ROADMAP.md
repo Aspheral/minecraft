@@ -6,7 +6,7 @@ Each substantial rendering subsystem receives its own design/specification cycle
 
 ## Milestone 0 — Workspace and Engineering Foundation
 
-Status: complete on `feat/solar-workspace`; pending integration into `main`.
+Status: complete and integrated into `main`.
 
 Scope:
 
@@ -19,23 +19,32 @@ Scope:
 - agent continuity documentation,
 - static-vs-runtime validation rules.
 
-No rendering pipeline is part of this milestone.
+No rendering pipeline was part of this milestone.
 
 ## Milestone 1 — Shader Foundation Architecture
 
-Next architectural cycle.
+Status: Foundation v0 source and static validation complete on `feat/solar-foundation`; review/integration pending.
 
-Expected questions include:
+Completed scope:
 
-- target Minecraft/Iris compatibility range,
+- target Minecraft/Iris compatibility references,
 - initial shader program/pass structure,
-- render targets and buffer ownership,
+- two-target render-buffer ownership,
+- compact SurfaceData codec,
+- depth-based position reconstruction,
 - reusable GLSL module boundaries,
-- configuration/profile structure,
-- initial CI/static-validation strategy,
-- minimal runtime foundation that can be genuinely tested in Minecraft.
+- minimal configuration and quality interfaces,
+- developer diagnostic views,
+- GitHub Actions static validation,
+- S0 complete-manifest validation,
+- S1 pinned generic GLSL compile/link validation.
 
-No foundation implementation should begin until its design and plan are approved.
+Evidence status:
+
+- **S0/S1:** passing.
+- **I0/I1:** pending genuine Minecraft + Iris runtime evidence.
+
+The Foundation is intentionally visually neutral. It does not claim cinematic rendering or the 120 FPS project target has been achieved.
 
 ## Later Milestone Families
 

@@ -1,0 +1,1 @@
+const int SOLAR_COMMON_FIXTURE = 1;

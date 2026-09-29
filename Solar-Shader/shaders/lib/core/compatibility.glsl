@@ -1,0 +1,10 @@
+#ifndef SOLAR_COMPATIBILITY_GLSL
+#define SOLAR_COMPATIBILITY_GLSL
+
+#ifdef IS_IRIS
+#define SOLAR_RUNNING_ON_IRIS 1
+#else
+#define SOLAR_RUNNING_ON_IRIS 0
+#endif
+
+#endif
