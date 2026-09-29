@@ -10,6 +10,8 @@
 
 **Spec:** `Solar-Shader/docs/superpowers/specs/2026-09-29-solar-foundation-design.md`
 
+**Plan status:** Written for user review. No implementation begins until this plan is approved and an execution method is selected.
+
 ## Global Constraints
 
 - Repository: `Aspheral/minecraft`.
@@ -981,6 +983,10 @@ Required fields:
 Date
 Commit SHA
 Evidence level (I0 or I1)
+Shaderpack discovered by Iris
+Shaderpack enable result
+Solar/Iris compile error result
+Compile/debug log reference
 Minecraft version
 Fabric Loader version
 Iris version
@@ -1009,6 +1015,7 @@ Sky result
 Hand result
 Water/translucency result
 Weather result
+Dimension-switching result
 Average FPS (I1 only)
 1% low FPS (I1 only)
 GPU frame time where measurable
